@@ -1,29 +1,12 @@
-#import sqlite3
-#import pymysql
-import psycopg2
+from .pool import ConnectionPool
 
-class DBConnector:
-    def __init__(self, server, host, user, password, database):
-        self.db_type = server
-        self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-        self.connection = None
-        self.cursor = None
-    
-    def connect(self):
-        if self.db_type == 'postgresql':
-            self.connection = psycopg2.connect(host=self.host, user=self.user, password=self.password, database=self.database)
-        else:
-            raise ValueError("Unsupported database type")
-        
+class ConnectorHandler:
+    def __init__(self, resource: ConnectionPool):
+        self.resource = resource
+        self.connection = self.resource.acquire()
         self.cursor = self.connection.cursor()
     
     def execute_query(self, query):
-        if not self.connection:
-            self.connect()
-        
         self.cursor.execute(query)
         self.connection.commit()
         if self.cursor.description is not None:
@@ -34,5 +17,4 @@ class DBConnector:
     def close(self):
         if self.connection:
             self.cursor.close()
-            self.connection.close()
-            self.connection.close()
+            self.resource.release(self.connection)

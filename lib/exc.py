@@ -23,11 +23,24 @@ class ArgumentError(ORMException):
     """
     Raised when an invalid or conflicting function argument is supplied.
 
-    This error generally corresponds to construction time state errors.
+    This error generally corresponds to construction time state errors that are user invoked.
 
     """
     code = 1001
 
+class ConstructionError(ORMException):
+    """
+    Raised when an fatal error occurs in ORM construction steps.
+
+    This error generally corresponds to construction time state errors that are not user invoked.
+    """
+    code = 1002
+
+class ResourceError(ORMException):
+    """
+    Raised when an resource is not accessible.
+    """
+    code = 2001
 
 if __name__=='__main__':
     try:
