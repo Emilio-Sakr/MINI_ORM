@@ -7,7 +7,8 @@ class POSTGRESQL_PARSER:
     @classmethod
     def create_table(cls, table: object) -> str:
         create_table_statement = f"CREATE TABLE IF NOT EXISTS {table.__name__.lower()} ("
-        create_table_statement += f"id SERIAL PRIMARY KEY, "
+        if not has_primary_key(table):
+            create_table_statement += f"id SERIAL PRIMARY KEY, "
         attributes = []
         for attribute_name, attribute_value in table.__dict__.items():
             if attribute_name == 'id':
@@ -41,3 +42,9 @@ class POSTGRESQL_PARSER:
             return '{} {} {}'.format(attribute_name, type.sql_str, constraints_text)
 
 
+def has_primary_key(cls):
+    for attr_name in dir(cls):
+        attr = getattr(cls, attr_name)
+        if isinstance(attr, tuple) and 'PRIMARY KEY' in attr:
+            return True
+    return False

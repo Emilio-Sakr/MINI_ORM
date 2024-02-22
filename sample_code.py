@@ -1,7 +1,8 @@
 from orm.sql import POSTGRESQL_PARSER, String, Integer
 
 class User:
-    username = (String(), 'NOT NULL')
+    matricule = (String(type='VARCHAR', n=10), 'PRIMARY KEY')
+    username = String(),
     email = String()
 
-POSTGRESQL_PARSER.create_table(User)
+print(POSTGRESQL_PARSER.create_table(User))
