@@ -42,8 +42,3 @@ class ResourceError(ORMException):
     """
     code = 2001
 
-if __name__=='__main__':
-    try:
-        raise ArgumentError("Another issue occurred")
-    except ArgumentError as e:
-        print(e)
