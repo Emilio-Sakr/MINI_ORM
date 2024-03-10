@@ -3,6 +3,12 @@ import re
 from .. import exc
 
 class URL:
+    '''
+    This is The url used to access the database.
+
+    It will ensure all provided data is in the right format before initiating the connection.
+    '''
+
     supported_servers = ['postgresql']
 
     def __init__(self, server, username, password, host, port, database, pool) -> "URL":
@@ -52,8 +58,14 @@ class URL:
 
     @classmethod
     def _assert_port(cls, port: int) -> int:
-        if not isinstance(port, int) or (port <= 0 or port >= 65536):
+        try:
+            port = int(port)
+        except:
+            raise TypeError('port must be of integer value')
+        
+        if (port <= 0 or port >= 65536):
             raise TypeError('Port must be an integer between 1 and 65536')
+        
         return port
 
 def url_parser(connection_string: str, **kwargs) -> URL:
@@ -75,15 +87,12 @@ def url_parser(connection_string: str, **kwargs) -> URL:
         components = match.groupdict()
 
         components.update({'pool': {}})
-        pool_componants = ['min_pool_size', 'max_pool_size']
+        pool_components = ['min_pool_size', 'max_pool_size']
         for key, value in kwargs.items():
-            if key in pool_componants:
+            if key in pool_components:
                 components['pool'][key] = int(value)
 
         name = components.pop("name")
-
-        if components["port"]:
-            components["port"] = int(components["port"])
 
         return URL.create(name, **components) 
     else:

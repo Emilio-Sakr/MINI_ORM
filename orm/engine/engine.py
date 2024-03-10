@@ -19,3 +19,32 @@ class Engine:
         handler.execute_query(sql_create_table)
         handler.close()
         
+    def insert(self, table, **kwargs):
+        handler = ConnectorHandler(self.pool)
+
+        if self.URL.server == self.postgresql:
+            sql_insert_into_table = POSTGRESQL_PARSER.insert(table, **kwargs)
+            print(sql_insert_into_table)
+
+        handler.execute_query(sql_insert_into_table)
+        handler.close()
+
+    def update(self, table, filter_clause, **kwargs):
+        handler = ConnectorHandler(self.pool)
+
+        if self.URL.server == self.postgresql:
+            sql_update_table = POSTGRESQL_PARSER.update(table, filter_clause, **kwargs)
+            print(sql_update_table)
+
+        handler.execute_query(sql_update_table)
+        handler.close()
+
+    def delete(self, table, filter_clause):
+        handler = ConnectorHandler(self.pool)
+
+        if self.URL.server == self.postgresql:
+            sql_delete_from_table = POSTGRESQL_PARSER.delete(table, filter_clause)
+            print(sql_delete_from_table)
+
+        handler.execute_query(sql_delete_from_table)
+        handler.close()

@@ -26,7 +26,7 @@ class ArgumentError(ORMException):
     This error generally corresponds to construction time state errors that are user invoked.
 
     """
-    code = 1001
+    code = 101
 
 class ConstructionError(ORMException):
     """
@@ -34,11 +34,11 @@ class ConstructionError(ORMException):
 
     This error generally corresponds to construction time state errors that are not user invoked.
     """
-    code = 1002
+    code = 102
 
 class ResourceError(ORMException):
     """
     Raised when an resource is not accessible.
     """
-    code = 2001
+    code = 201
 

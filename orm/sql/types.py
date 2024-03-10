@@ -19,7 +19,7 @@ class String(Base):
         if type in cls.types:
             return type
         else:
-            raise exc.ArgumentError('String type must be '.format(cls.get_string_types()))
+            raise exc.ArgumentError('String type must be one of {}'.format(cls.get_string_types()))
     
     @classmethod
     def _assert_int(cls, n):
@@ -39,14 +39,14 @@ class Integer(Base):
         if not type or type=='INT':
             self.sql_str = 'INT'
         else:
-            self.sql_str = String._assert_type(type)
+            self.sql_str = Integer._assert_type(type)
 
     @classmethod
     def _assert_type(cls, type):
         if type in cls.types:
             return type
         else:
-            raise exc.ArgumentError('String type must be '.format(cls.get_string_types()))
+            raise exc.ArgumentError('Integer type must be one of {}'.format(cls.get_string_types()))
         
     @classmethod
     def get_string_types(cls):

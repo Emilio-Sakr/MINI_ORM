@@ -4,6 +4,9 @@ from .url import URL
 from ..exc import ConstructionError, ResourceError        
 
 class ConnectionPool:
+    '''
+    This will create a connection pool from which we will take connectors to access the database
+    '''
     def __init__(self, URL: URL, min_pool_size: int = 1, max_pool_size: int = 5):
         self.max_pool_size = int(max_pool_size)
         self.min_pool_size = int(min_pool_size)
