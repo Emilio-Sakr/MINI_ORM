@@ -52,6 +52,31 @@ class Integer(Base):
     def get_string_types(cls):
         return ', '.join(cls.types)
     
+class ForeignKey(Base):
+    __orm__type__ = True
 
+    def __init__(self, referenced_table, column):
+        self.referenced_table = referenced_table
+        self.column = column
 
-type_list = [String, Integer]
+    def get(self, name):
+        self.sql_str = 'CONSTRAINT {} FOREIGN KEY ({}) REFERENCES {}'.format(name ,self.column, self.referenced_table)
+        return self.sql_str
+    
+class Index(Base):
+    __orm__type__ = True
+
+    def __init__(self, *columns, **kwargs):
+        self.unique = kwargs.pop('unique', False)
+        self.columns = columns
+
+    def get(self, name):
+        column_list = ', '.join(self.columns)
+        if self.unique:
+            self.sql_str = f'CONSTRAINT {name} UNIQUE ({column_list})'
+        else:
+            self.sql_str = f'INDEX {name} ({column_list})'
+        return self.sql_str
+
+        
+type_list = [String, Integer, ForeignKey, Index]

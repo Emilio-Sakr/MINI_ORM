@@ -48,3 +48,14 @@ class Engine:
 
         handler.execute_query(sql_delete_from_table)
         handler.close()
+
+    def select(self, table, columns, filter_by, order_by, limit):
+        handler = ConnectorHandler(self.pool)
+
+        if self.URL.server == self.postgresql:
+            sql_select_from_table = POSTGRESQL_PARSER.select(table, columns, filter_by, order_by, limit)
+            print(sql_select_from_table)
+
+        data = handler.execute_query(sql_select_from_table)
+        handler.close()
+        return data

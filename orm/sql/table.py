@@ -37,3 +37,8 @@ class TableBase:
     def delete(cls, filter_clause):
         cls._ensure_engine_connected()
         cls.__engine.delete(cls, filter_clause)
+
+    @classmethod
+    def select(cls, columns='*', filter_by=None, order_by=None, limit=None):
+        cls._ensure_engine_connected()
+        return cls.__engine.select(cls, columns, filter_by, order_by, limit)

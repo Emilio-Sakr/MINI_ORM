@@ -1,4 +1,4 @@
-from .types import type_list, Base
+from .types import type_list, Base, ForeignKey, Index
 from .. import exc
 
 class POSTGRESQL_PARSER:
@@ -46,8 +46,10 @@ class POSTGRESQL_PARSER:
 
     @classmethod
     def _parse_attribute(cls, attribute_name: str, type: Base, constraints: list[str] = []):
-        if not constraints:
-            return '{} {}'.format(attribute_name, type.sql_str)
+        if isinstance(type, (ForeignKey, Index)):
+            return type.get(attribute_name)
+        elif not constraints:
+            return '{} {}'.format(attribute_name, type.sql_str)  
         else:
             cls._parse_check(attribute_name, constraints)
             constraints_text = ' '.join(constraints)
@@ -60,19 +62,96 @@ class POSTGRESQL_PARSER:
         return f"INSERT INTO {table.__name__} ({columns}) VALUES ({values})"
     
     @classmethod
-    def update(cls, table, filter_clause, **kwargs):
+    def update(cls, table, filter_by, **kwargs):
         set_clause = ', '.join(f"{key} = '{value}'" if isinstance(value, str) else f"{key} = {value}" for key, value in kwargs.items())        
-        sql_update = f"UPDATE {table.__name__} SET {set_clause} WHERE {filter_clause};"
+        sql_update = f"UPDATE {table.__name__} SET {set_clause}"
+
+        if isinstance(filter_by, list) or isinstance(filter_by, tuple):
+            filter_conditions = ' AND '.join(filter_by)
+            sql_update += f" WHERE {filter_conditions}"
+
+        elif filter_by and isinstance(filter_by, dict):
+            where_conditions = []
+            for column, pattern in filter_by.items():
+                where_conditions.append(f"{column} LIKE '{pattern}'")
+
+            filter_conditions = ' AND '.join(where_conditions)
+            sql_update += f" WHERE {filter_conditions}"
+
+        else:
+            sql_update += f" WHERE {filter_by}"
+
+        sql_update += ";"
         return sql_update
     
     @classmethod
-    def delete(cls, table, filter_clause):
-        sql_delete = f"DELETE FROM {table.__name__} WHERE {filter_clause};"
+    def delete(cls, table, filter_by):
+        sql_delete = f"DELETE FROM {table.__name__}"
+
+        if isinstance(filter_by, list) or isinstance(filter_by, tuple):
+            filter_conditions = ' AND '.join(filter_by)
+            sql_delete += f" WHERE {filter_conditions}"
+
+        elif filter_by and isinstance(filter_by, dict):
+            where_conditions = []
+            for column, pattern in filter_by.items():
+                where_conditions.append(f"{column} LIKE '{pattern}'")
+
+            filter_conditions = ' AND '.join(where_conditions)
+            sql_delete += f" WHERE {filter_conditions}"
+
+        elif filter_by and filter_by != '*':
+            sql_delete += f" WHERE {filter_by}"
+
+        sql_delete += ";"
         return sql_delete
+    
+    @classmethod
+    def select(cls, table, columns, filter_by, order_by, limit):
+        if isinstance(limit, (list, tuple)) and len(limit) != 2:
+            raise exc.ArgumentError('Limit instance must have 2 values not {}'.format(len(limit)))
+
+        sql_select = f"SELECT {columns} FROM {table.__name__}"
+        if filter_by:
+            if isinstance(filter_by, (list, tuple)):
+                filter_conditions = ' AND '.join(filter_by)
+                sql_select += f" WHERE {filter_conditions}"
+
+            elif filter_by and isinstance(filter_by, dict):
+                where_conditions = []
+                for column, pattern in filter_by.items():
+                    where_conditions.append(f"{column} LIKE '{pattern}'")
+
+                filter_conditions = ' AND '.join(where_conditions)
+                sql_select += f" WHERE {filter_conditions}"
+
+            else:
+                sql_select += f" WHERE {filter_by}"
+
+        if order_by:
+            if isinstance(order_by, (list, tuple)):
+                order_conditions = ', '.join(order_by)
+                sql_select += f" ORDER BY {order_conditions}"
+
+            else:
+                sql_select += f" ORDER BY {order_by}"
+
+        if limit:
+            if isinstance(limit, (list, tuple)) and len(limit) == 2:
+                sql_select += f" LIMIT {limit[0]}, {limit[1]}"
+
+            else:
+                sql_select += f" LIMIT {limit}"
+
+        sql_select += ";"
+        return sql_select
+
 
 def has_primary_key(cls):
     for attr_name in dir(cls):
         attr = getattr(cls, attr_name)
-        if isinstance(attr, tuple) and 'PRIMARY KEY' in attr:
-            return True
+        if isinstance(attr, tuple):
+            for item in attr:
+                if isinstance(item, str) and 'primary key' in item.lower():
+                    return True
     return False
