@@ -22,7 +22,7 @@ class Books(TableBase):
     id = (Integer(type='SERIAL'), 'PRIMARY KEY')
     title = String(type='VARCHAR', n=255)
     author = String(type='VARCHAR', n=255)
-    published_year = Integer()
+    published_year = (Integer(), 'NOT NULL')
     genre_id = Integer()
     genre = ForeignKey('genres(id)', 'genre_id')
     unique_title_author = Index('title', 'author', unique=True)
@@ -35,9 +35,12 @@ engine.create_table(Books)
 Books.connect_to(engine)
 Genres.connect_to(engine)
 
-command = 1
+command = 2
+
 # Inserting data into tables
 if command == 0:
+    Books.delete('*') # or Books.delete() 
+    Genres.delete('*')
     Genres.insert(name='Historical Fiction', id = 1)
     Genres.insert(name='Thriller', id = 2)
     Genres.insert(name='Horror', id = 3)
@@ -45,6 +48,8 @@ if command == 0:
     Genres.insert(name='Self-Help', id = 5)
     Genres.insert(name='Fantasy', id = 6)
     Genres.insert(name='Dystopian', id = 7)
+    Genres.insert(name='Mystery', id = 8)
+    Genres.insert(name='Romance', id = 9)
 
     Books.insert(title='To Kill a Mockingbird', author='Harper Lee', published_year=1960, genre_id=1)
     Books.insert(title='The Catcher in the Rye', author='J.D. Salinger', published_year=1951, genre_id=2)
@@ -56,13 +61,49 @@ if command == 0:
     Books.insert(title='The Hobbit', author='J.R.R. Tolkien', published_year=1937, genre_id=6)
     Books.insert(title='1984', author='George Orwell', published_year=1949, genre_id=7)
     Books.insert(title='The Da Vinci Code', author='Dan Brown', published_year=2003, genre_id=2)
+    Books.insert(title='A good girl guide''s to murder', author='Holly Jackson', published_year=2019, genre_id=8)
+    Books.insert(title='Twisted Love', author='Ana Huang', published_year=2021, genre_id=9)
 
+elif command==1:
+    Books.delete('*') # or Books.delete() 
+    Genres.delete('*')
+    genres_data = [
+        {'name': 'Historical Fiction', 'id': 1},
+        {'name': 'Thriller', 'id': 2},
+        {'name': 'Horror', 'id': 3},
+        {'name': 'Biography', 'id': 4},
+        {'name': 'Self-Help', 'id': 5},
+        {'name': 'Fantasy', 'id': 6},
+        {'name': 'Dystopian', 'id': 7},
+        {'name': 'Mystery', 'id': 8},
+        {'name': 'Romance', 'id': 9}
+    ]
+    books_data = [
+        {'title': 'To Kill a Mockingbird', 'author': 'Harper Lee', 'published_year': 1960, 'genre_id': 1},
+        {'title': 'The Catcher in the Rye', 'author': 'J.D. Salinger', 'published_year': 1951, 'genre_id': 2},
+        {'title': 'The Lord of the Rings', 'author': 'J.R.R. Tolkien', 'published_year': 1954, 'genre_id': 6},
+        {'title': 'Gone with the Wind', 'author': 'Margaret Mitchell', 'published_year': 1936, 'genre_id': 1},
+        {'title': 'The Girl with the Dragon Tattoo', 'author': 'Stieg Larsson', 'published_year': 2005, 'genre_id': 2},
+        {'title': 'Pride and Prejudice', 'author': 'Jane Austen', 'published_year': 1813, 'genre_id': 1},
+        {'title': 'Harry Potter and the Philosopher''s Stone', 'author': 'J.K. Rowling', 'published_year': 1997, 'genre_id': 6},
+        {'title': 'The Hobbit', 'author': 'J.R.R. Tolkien', 'published_year': 1937, 'genre_id': 6},
+        {'title': '1984', 'author': 'George Orwell', 'published_year': 1949, 'genre_id': 7},
+        {'title': 'The Da Vinci Code', 'author': 'Dan Brown', 'published_year': 2003, 'genre_id': 2},
+        {'title': 'A good girl guide''s to murder', 'author': 'Holly Jackson', 'published_year': 2019, 'genre_id': 8},
+        {'title': 'Twisted Love', 'author': 'Ana Huang', 'published_year': 2021, 'genre_id': 9}
+    ]
+    Genres.insert_all(genres_data)
+    Books.insert_all(books_data)
 
 # Query for data
-elif command==1:
-    print(Books.select('*', filter_by=('genre_id = 2', 'published_year = 1951')))
+elif command==2:
+    #print(Books.select('*'))
+    print(Books.select('*', filter_by={'author': 'Ja%'}, order_by='published_year ASC', limit=2))
+    print(Books.select('author published_year title', filter_by={'author': 'Ja%'}, order_by='published_year ASC', limit=2))
+    #print(Books.select('*', filter_by='genre_id = 8'))
+
 
 # Delete all element from table
-elif command==2:
+elif command==3:
     Books.delete('*') # or Books.delete() 
     Genres.delete('*')
