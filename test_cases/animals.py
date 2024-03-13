@@ -79,15 +79,19 @@ elif command == 2:
     print(Birds.select('*'))
 
     print("\nCats:")
-    print(Cats.select('*'))
+    print(Cats.select())
 
     print("\nDogs:")
-    print(Dogs.select('*'))
+    print(Dogs.select())
 
     print("\nBirds (Name and Color):")
     print(Birds.select('name color'))
+    # or
+    #print(Birds.select(('name', 'color')))
+    #print(Birds.select(['name', 'color']))
 
     print("\nDogs with age greater than 2:")
     print(Dogs.select('*', filter_by='age > 2'))
-
-
+    # or
+    #print(Dogs.select('*', filter_by=['age > 2']))
+    #print(Dogs.select('*', filter_by=('age > 2')))

@@ -52,6 +52,10 @@ class Integer(Base):
     def get_string_types(cls):
         return ', '.join(cls.types)
     
+class Boolean(Base):
+    def __init__(self):
+        self.sql_str = 'BOOLEAN'
+    
 class ForeignKey(Base):
     __orm__type__ = True
 
@@ -79,4 +83,5 @@ class Index(Base):
         return self.sql_str
 
         
-type_list = [String, Integer, ForeignKey, Index]
+types = (String, Integer, Boolean)
+special_types = (ForeignKey, Index)

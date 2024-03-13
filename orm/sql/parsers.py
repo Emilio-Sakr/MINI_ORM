@@ -1,8 +1,9 @@
-from .types import type_list, Base, ForeignKey, Index
+from .types import types, special_types, Base
 from .. import exc
 
 class POSTGRESQL_PARSER:
-    orm_types = type_list
+    orm_types = types
+    orm_special_types = special_types
 
     @classmethod
     def create_table(cls, table: object) -> str:
@@ -48,11 +49,32 @@ class POSTGRESQL_PARSER:
     
     
     @classmethod
-    def create_table_inherit(cls, table):
+    def create_table_inherit(cls, table) -> str:
+        """
+        Generate an SQL CREATE TABLE statement for the specified table object with inheritance.
+
+        Args:
+            table (class): The table class representing the table schema.
+
+        Returns:
+            str: An SQL CREATE TABLE statement.
+
+        This method constructs a CREATE TABLE statement based on the attributes of the provided table object,
+        including attributes inherited from parent classes.
+        It first checks if the table has a primary key defined. If not, it adds a default primary key named 'id' or 'rowid'.
+        Then, it iterates over the attributes of the table object and its parent classes to extract attribute names, types, and constraints.
+        Finally, it combines all attribute definitions to form the complete CREATE TABLE statement.
+        """
+        
         create_table_statement = f"CREATE TABLE IF NOT EXISTS {table.__name__.lower()} ("
         
         if not has_primary_key(table):
-            create_table_statement += "id SERIAL PRIMARY KEY, "
+            if 'id' in dir(table):
+                create_table_statement += f"rowid SERIAL PRIMARY KEY, "
+            elif 'rowid' in dir(table):
+                create_table_statement += f"pk_ SERIAL PRIMARY KEY, "
+            else:
+                create_table_statement += f"id SERIAL PRIMARY KEY, "
         
         attributes = []
         for level_class in table.__mro__:
@@ -75,28 +97,58 @@ class POSTGRESQL_PARSER:
 
 
     @classmethod
-    def _assert_sql_type(cls, type_):
+    def _assert_sql_type(cls, type_) -> None:
+        """
+        Asserts provided type is of orm type
+        """
+
         for orm_type in cls.orm_types:
             if isinstance(type_, orm_type):
                 return type_
+        for orm_type in cls.orm_special_types:
+            if isinstance(type_, orm_type):
+                return type_
+            
         raise exc.ArgumentError('{} is not a orm type'.format(type(type_)))
     
     @classmethod
-    def _parse_check(cls, attribute_name: str, constraints: list[str]) -> None:
+    def _parse_check(cls, attribute_name: str, constraints: list[str]) -> bool:
+        """
+        Replaces $ in constraints with the attribute name
+
+        Returns:
+            bool: True if check was found.
+            bool: False if check was not found.
+        """
+
         for index, cons in enumerate(constraints):
             if 'check' in cons.lower():
                 constraints[index] = cons.replace('$', attribute_name)
+                return True
+        return False
 
     @classmethod
     def _parse_attribute(cls, attribute_name: str, type: Base, constraints: list[str] = []) -> str:
-        if isinstance(type, (ForeignKey, Index)):
-            return type.get(attribute_name)
-        elif not constraints:
-            return '{} {}'.format(attribute_name, type.sql_str)  
-        else:
-            cls._parse_check(attribute_name, constraints)
-            constraints_text = ' '.join(constraints)
-            return '{} {} {}'.format(attribute_name, type.sql_str, constraints_text)
+        """
+        Function to parse attribute name, type, and other constraints 
+        """
+
+        if isinstance(type, cls.orm_special_types): # Special types
+            if not constraints:
+                return type.get(attribute_name)
+            else:
+                if cls._parse_check(attribute_name, constraints):
+                    raise exc.ArgumentError()
+                constraints_text = ' '.join(constraints)
+                return '{} {}'.format(type.get(attribute_name), constraints_text)
+
+        else: # Normal types
+            if not constraints:
+                return '{} {}'.format(attribute_name, type.sql_str)  
+            else:
+                cls._parse_check(attribute_name, constraints)
+                constraints_text = ' '.join(constraints)
+                return '{} {} {}'.format(attribute_name, type.sql_str, constraints_text)
 
     @classmethod
     def insert(cls, table, **columns) -> str:
@@ -116,7 +168,7 @@ class POSTGRESQL_PARSER:
         return f"INSERT INTO {table.__name__} ({columns_str}) VALUES ({values})"
     
     @classmethod
-    def insert_all(cls, table, records):
+    def insert_all(cls, table, records) -> str:
         """
         Construct an SQL INSERT statement for inserting multiple records into the specified table.
 
@@ -131,9 +183,9 @@ class POSTGRESQL_PARSER:
             str: An SQL INSERT statement for inserting multiple records.
         """
 
-        columns = ', '.join(records[0].keys())
+        columns = ', '.join(sorted(records[0].keys()))
         values = ', '.join(
-            f"({', '.join(f'{value!r}' if isinstance(value, str) else str(value) for value in record.values())})"
+            f"({', '.join(f'{record[key]!r}' if isinstance(record[key], str) else str(record[key]) for key in sorted(record.keys()))})"
             for record in records
         )
         return f"INSERT INTO {table.__name__} ({columns}) VALUES {values};"
@@ -163,7 +215,7 @@ class POSTGRESQL_PARSER:
         return sql_update
     
     @classmethod
-    def delete(cls, table, filter_by):
+    def delete(cls, table, filter_by) -> str:
         """
         Construct an SQL DELETE statement for deleting records from the specified table.
 
@@ -185,7 +237,7 @@ class POSTGRESQL_PARSER:
         return sql_delete
     
     @classmethod
-    def select(cls, table, columns, **constraints):
+    def select(cls, table, columns, **constraints) -> str:
         """
         Generates an SQL SELECT statement to query data from the specified table
 
