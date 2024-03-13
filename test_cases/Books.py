@@ -29,8 +29,8 @@ class Books(TableBase):
     unique_title_author = Index('title', 'author', unique=True)
 
 # Creating the tables
-engine.create_table_inherit(Genres)
-engine.create_table_inherit(Books)
+engine.create_table(Genres)
+engine.create_table(Books)
 
 # Connecting Tables to engine
 Books.connect_to(engine)

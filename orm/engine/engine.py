@@ -9,7 +9,7 @@ class Engine:
         self.pool = ConnectionPool(self.URL, **self.URL.pool)
         self.postgresql = 'postgresql'
 
-    def create_table_inherit(self, table: object):
+    def create_table(self, table: object):
         handler = ConnectorHandler(self.pool)
 
         if self.URL.server == self.postgresql:
