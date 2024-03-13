@@ -28,8 +28,8 @@ class Books(TableBase):
     unique_title_author = Index('title', 'author', unique=True)
 
 # Creating the tables
-engine.create_table(Genres)
-engine.create_table(Books)
+engine.create_table_inherit(Genres)
+engine.create_table_inherit(Books)
 
 # Connecting Tables to engine
 Books.connect_to(engine)
@@ -97,10 +97,11 @@ elif command==1:
 
 # Query for data
 elif command==2:
-    #print(Books.select('*'))
-    print(Books.select('*', filter_by={'author': 'Ja%'}, order_by='published_year ASC', limit=2))
+    print(Books.select('*'))
+    print(Books.select(limit=2, offset=4))
+    print(Books.select(filter_by={'author': 'Ja%'}, order_by='published_year ASC', limit=2))
     print(Books.select('author published_year title', filter_by={'author': 'Ja%'}, order_by='published_year ASC', limit=2))
-    #print(Books.select('*', filter_by='genre_id = 8'))
+    print(Books.select('*', filter_by=('genre_id = 2', 'published_year = 2003')))
 
 
 # Delete all element from table

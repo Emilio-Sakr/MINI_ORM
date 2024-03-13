@@ -45,6 +45,34 @@ class POSTGRESQL_PARSER:
         create_table_statement += ", ".join(attributes)
         create_table_statement += ")"
         return create_table_statement
+    
+    
+    @classmethod
+    def create_table_inherit(cls, table):
+        create_table_statement = f"CREATE TABLE IF NOT EXISTS {table.__name__.lower()} ("
+        
+        if not has_primary_key(table):
+            create_table_statement += "id SERIAL PRIMARY KEY, "
+        
+        attributes = []
+        for level_class in table.__mro__:
+            if 'TableBase' in str(level_class) or 'TableBase' in repr(level_class):
+                break
+            for attribute_name, attribute_value in level_class.__dict__.items():
+                if not attribute_name.startswith("__") and attribute_name not in attributes:
+                    if not isinstance(attribute_value, tuple):
+                        sql_type = cls._assert_sql_type(attribute_value)
+                        attributes.append(cls._parse_attribute(attribute_name, sql_type))
+                    else:
+                        sql_type = cls._assert_sql_type(attribute_value[0])
+                        constraints = list(attribute_value[1:])
+                        attributes.append(cls._parse_attribute(attribute_name, sql_type, constraints))
+
+        create_table_statement += ", ".join(attributes)
+        create_table_statement += ")"
+        
+        return create_table_statement
+
 
     @classmethod
     def _assert_sql_type(cls, type_):
@@ -176,6 +204,7 @@ class POSTGRESQL_PARSER:
         filter_by = constraints.get('filter_by', None)
         order_by = constraints.get('order_by', None)
         limit = constraints.get('limit', None)
+        offset = constraints.get('offset', None)
 
         if isinstance(limit, (list, tuple)) and len(limit) != 2:
             raise exc.ArgumentError('Limit instance must have 2 values not {}'.format(len(limit)))
@@ -195,6 +224,10 @@ class POSTGRESQL_PARSER:
         if limit:
             sql_limit = cls._limit(limit)
             sql_select += sql_limit
+        
+        if offset:
+            sql_offset = cls._offset(offset)
+            sql_select += sql_offset
 
         sql_select += ";"
         return sql_select
@@ -241,13 +274,15 @@ class POSTGRESQL_PARSER:
     
     @classmethod
     def _limit(cls, limit):
-        sql_limit = ''
-        if isinstance(limit, (list, tuple)) and len(limit) == 2:
-            sql_limit += f" LIMIT {limit[0]}, {limit[1]}"
-
-        else:
-            sql_limit += f" LIMIT {limit}"
-        return sql_limit
+        if not isinstance(limit, int):
+            raise exc.ArgumentError('limit must be an integer')
+        return f" LIMIT {limit}"
+    
+    @classmethod
+    def _offset(cls, offset):
+        if not isinstance(offset, int):
+            raise exc.ArgumentError('offset must be an integer')
+        return f" OFFSET {offset}"
 
 def has_primary_key(cls):
     for attr_name in dir(cls):
