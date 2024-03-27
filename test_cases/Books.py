@@ -36,7 +36,7 @@ engine.create_table(Books)
 Books.connect_to(engine)
 Genres.connect_to(engine)
 
-command = 1
+command = 0
 
 # Inserting data into tables
 if command == 0:
