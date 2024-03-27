@@ -107,7 +107,6 @@ Usage:
 
 ```python
 # Define a foreign key constraint referencing the 'id' column of the 'authors' table
-
 author_id = ForeignKey('authors(id)', 'author_id')
 ```
 
