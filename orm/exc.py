@@ -24,7 +24,6 @@ class ArgumentError(ORMException):
     Raised when an invalid or conflicting function argument is supplied.
 
     This error generally corresponds to construction time state errors that are user invoked.
-
     """
     code = 101
 

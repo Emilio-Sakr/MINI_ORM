@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Connecting to the DB
 connection_string = "postgresql://postgres:Qwerty22333@localhost:5432/postgres"
-engine = Engine(connection_string, logger=logger, min_pool_size=3)
+engine = Engine(connection_string, logger=logger, min_pool_size=3, max_pool_size=5)
 
 # Designing the Tables
 class Usernames(TableBase):

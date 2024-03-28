@@ -138,7 +138,7 @@ class POSTGRESQL_PARSER:
                 return type.get(attribute_name)
             else:
                 if cls._parse_check(attribute_name, constraints):
-                    raise exc.ArgumentError()
+                    raise exc.ArgumentError('CHECK cannot be used with {}'.format(type))
                 constraints_text = ' '.join(constraints)
                 return '{} {}'.format(type.get(attribute_name), constraints_text)
 
