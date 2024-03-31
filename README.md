@@ -27,6 +27,9 @@ The connection string contains information required to establish a connection to
 - logger (optional):
   If provided, this attribute allows you to pass a logger object to the Engine class for logging purposes. If not provided, the engine will not perform logging.
 
+- level (optional):
+  If provided, indicates the level of the logs to be produced by the engine.
+
 - min_pool_size (optional):
   The minimum pool size refers to the minimum number of connections that the connection pool should maintain. Setting a minimum pool size ensures that a certain number of connections are always available in the pool, reducing connection establishment overhead, default is 1.
 
@@ -44,7 +47,7 @@ Here's how the connection process typically looks in code:
 connection_string = "postgresql://username:password@host:port/database_name"
 
 # Create an Engine object with the connection string and optional parameters
-engine = Engine(connection_string, min_pool_size=3, max_pool_size=10)
+engine = Engine(connection_string, logger=logger, min_pool_size=3, max_pool_size=10)
 ```
 
 ## ORM Datatypes

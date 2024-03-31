@@ -10,6 +10,8 @@ class ConnectionPool:
     def __init__(self, URL: URL, min_pool_size: int = 1, max_pool_size: int = 5):
         self.max_pool_size = int(max_pool_size)
         self.min_pool_size = int(min_pool_size)
+        if self.max_pool_size<self.min_pool_size:
+            self.max_pool_size = self.min_pool_size
         self.URL = URL
 
         self.postgresql = 'postgresql'

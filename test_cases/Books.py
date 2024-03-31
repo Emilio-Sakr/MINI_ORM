@@ -36,12 +36,10 @@ engine.create_table(Books)
 Books.connect_to(engine)
 Genres.connect_to(engine)
 
-command = 0
+command = 2
 
 # Inserting data into tables
 if command == 0:
-    Books.delete('*') # or Books.delete() 
-    Genres.delete('*')
     Genres.insert(name='Historical Fiction', id = 1)
     Genres.insert(name='Thriller', id = 2)
     Genres.insert(name='Horror', id = 3)
@@ -66,8 +64,6 @@ if command == 0:
     Books.insert(title='Twisted Love', author='Ana Huang', published_year=2021,available = True,  genre_id=9)
 
 elif command==1:
-    Books.delete('*') # or Books.delete() 
-    Genres.delete('*')
     genres_data = [
         {'name': 'Historical Fiction', 'id': 1},
         {'name': 'Thriller', 'id': 2},
@@ -107,5 +103,5 @@ elif command==2:
 
 # Delete all element from table
 elif command==3:
-    Books.delete('*') # or Books.delete() 
+    Books.delete('*') 
     Genres.delete('*')

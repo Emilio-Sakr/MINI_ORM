@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 # Connecting to the DB
 connection_string = "postgresql://postgres:Qwerty22333@localhost:5432/postgres"
-engine = Engine(connection_string, logger=logger, min_pool_size=3, max_pool_size=5)
+engine = Engine(connection_string, logger=logger, level=logging.INFO, min_pool_size=3, max_pool_size=5)
 
 # Designing the Tables
 class Usernames(TableBase):
-    matricule = (Integer(type='INT'), 'UNIQUE')
+    matricule = (Integer(), 'UNIQUE')
     username = String(type='VARCHAR', n=100)
     email = String(type='VARCHAR', n=200)
     password = (String('VARCHAR', n=100), 'CHECK ($ <> username AND CHAR_LENGTH($) >= 8)')
@@ -42,7 +42,7 @@ if command == 0:
 
 # Deleting Rows
 elif command == 1:
-    Usernames.delete('*')  # Or simply Usernames.delete()
+    Usernames.delete('*') 
     Usernames.delete(filter_by='matricule = 12345')
 
 # Updating Rows

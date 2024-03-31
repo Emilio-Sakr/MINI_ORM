@@ -42,19 +42,11 @@ command = 2
 
 # Inserting data into tables
 if command == 0:
-    Birds.delete('*')
-    Cats.delete('*')
-    Dogs.delete('*')
-
     Birds.insert(name='Parrot', age=5, color='Green')
     Cats.insert(name='Siamese', age=3, breed='Siamese')
     Dogs.insert(name='Labrador', age=2, breed='Labrador', size='Large')
 
 elif command==1:
-    Birds.delete('*')
-    Cats.delete('*')
-    Dogs.delete('*')
-
     birds_data = [
         {'name': 'Parrot', 'age': 5, 'color': 'Green'},
         {'name': 'Eagle', 'age': 7, 'color': 'Brown'},
